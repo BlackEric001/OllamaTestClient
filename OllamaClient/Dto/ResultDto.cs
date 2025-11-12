@@ -9,5 +9,7 @@ namespace OllamaClient.Dto
     public class ResultDto
     {
         public string? Response { get; set; }
+                       
+        public string? Thinking { get; set; }
     }
 }

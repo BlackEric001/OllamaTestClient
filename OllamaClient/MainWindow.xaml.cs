@@ -44,7 +44,7 @@ namespace OllamaClient
                 if (result.Result is not null)
                 {
                     var resultDto = JsonConvert.DeserializeObject<ResultDto>(result.Result);
-                    this.OllamaResponsePayload.Text = resultDto?.Response;
+                    this.OllamaResponsePayload.Text = string.IsNullOrEmpty(resultDto?.Response) ? resultDto?.Thinking :resultDto.Response;
                 }
             }
         }
@@ -98,7 +98,7 @@ namespace OllamaClient
 
             // Set filter for file extension and default file extension 
             dlg.DefaultExt = ".jpg";
-            dlg.Filter = "JPEG Files (*.jpeg)|*.jpeg|PNG Files (*.png)|*.png|JPG Files (*.jpg)|*.jpg|GIF Files (*.gif)|*.gif";
+            dlg.Filter = "JPG Files (*.jpg)|*.jpg|PNG Files (*.png)|*.png|JPEG Files (*.jpeg)|*.jpeg|GIF Files (*.gif)|*.gif";
 
             // Display OpenFileDialog by calling ShowDialog method 
             Nullable<bool> result = dlg.ShowDialog();
