@@ -47,7 +47,14 @@ namespace OllamaClient
                     var resultDto = JsonConvert.DeserializeObject<ResultDto>(result.Result);
                     this.OllamaResponsePayload.Text = string.IsNullOrEmpty(resultDto?.Response) ? resultDto?.Thinking : resultDto.Response;
                 }
-                SetStatusBar("Получен ответ", requestTime, DateTime.UtcNow);
+                var responseTime = DateTime.UtcNow;
+                SetStatusBar("Получен ответ", requestTime, responseTime);
+
+                this.OllamaResponsePayload.Text += Environment.NewLine;
+                this.OllamaResponsePayload.Text += Environment.NewLine;
+                this.OllamaResponsePayload.Text += Environment.NewLine;
+
+                this.OllamaResponsePayload.Text += $"Длительность: {(responseTime - requestTime).ToString()}";
             }
         }
 
