@@ -10,7 +10,11 @@
         <StatusBar DockPanel.Dock="Bottom">
             <TextBlock x:Name="lbState"/>
             <TextBlock Text=" | "/>
-            <TextBlock x:Name="lbLastUpdateTime"/>
+            <TextBlock x:Name="lbRequestTime"/>
+            <TextBlock Text=" | "/>
+            <TextBlock x:Name="lbResponseTime"/>
+            <TextBlock Text=" | "/>
+            <TextBlock x:Name="lbDuration"/>
         </StatusBar>
 
         <Grid Margin="10">
