@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:OllamaClient"
         mc:Ignorable="d"
-        Title="MainWindow" Height="757" Width="1285">
+        Title="MainWindow" Height="757" Width="1285" Initialized="Window_Initialized">
     <DockPanel>
         <StatusBar DockPanel.Dock="Bottom">
             <TextBlock x:Name="lbState"/>
@@ -41,22 +41,22 @@
                 </ComboBox>
                 <Label Content="Выберите файл для загрузки:"/>
                 <TextBox x:Name="tbFileName" Width="300"/>
-                <Button x:Name="btnSelectFile" Content="Выбрать файл" HorizontalAlignment="Right" VerticalAlignment="Bottom" Click="Button_SelectFile_Click" Width="100" Height="30"/>
-
+                <Button x:Name="btnSelectFile" Content="Выбрать файл" VerticalAlignment="Bottom" Click="Button_SelectFile_Click" Width="100" Height="30" HorizontalAlignment="Center"/>
             </StackPanel>
+            <Button Grid.Row="0" Grid.Column="3" x:Name="btnSettings" Content="Настройки" VerticalAlignment="Center" Click="Button_Settings_Click" Width="100" Height="30" HorizontalAlignment="Right"/>
 
-            <TextBox Grid.Row="1" x:Name="OllamaRequest" Width="Auto" Height="263" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+            <TextBox Grid.Row="1" x:Name="tbOllamaRequest" Width="Auto" Height="263" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                     ScrollViewer.VerticalScrollBarVisibility="Auto" AcceptsReturn="True" Text="Who are you?" Grid.ColumnSpan="3"/>
 
             <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="5,5,5,5" Grid.ColumnSpan="3">
                 <Label Content="Model Response:"/>
             </StackPanel>
 
-            <TextBox Grid.Row="3" x:Name="OllamaResponseFull" Width="Auto" Height="220" ScrollViewer.HorizontalScrollBarVisibility="Visible"
+            <TextBox Grid.Row="3" x:Name="tbOllamaResponseFull" Width="Auto" Height="220" ScrollViewer.HorizontalScrollBarVisibility="Visible"
                     ScrollViewer.VerticalScrollBarVisibility="Visible" AcceptsReturn="True" IsReadOnly="True" IsReadOnlyCaretVisible="True" Grid.ColumnSpan="3"
                      />
 
-            <TextBox Grid.Row="4" x:Name="OllamaResponsePayload" Width="Auto" Height="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible"
+            <TextBox Grid.Row="4" x:Name="tbOllamaResponsePayload" Width="Auto" Height="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible"
         ScrollViewer.VerticalScrollBarVisibility="Visible" AcceptsReturn="True" IsReadOnly="True" IsReadOnlyCaretVisible="True" Grid.ColumnSpan="3"
          />
 

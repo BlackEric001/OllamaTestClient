@@ -15,18 +15,17 @@ namespace OllamaClient.OllamaUtils
         /// http://localhost:11434/api/tags
         /// </summary>
         /// <returns></returns>
-        internal static async Task<string> GetLocalModelsListAsync()
+        internal static async Task<string> GetLocalModelsListAsync(SettingsDto settings)
         {
-            IOllamaApiClient client = GetOllamaClient();
+            IOllamaApiClient client = GetOllamaClient(settings);
             var result = await client.GetLocalModelsAsync();
 
             return FormatJson(result);
         }
 
-        private static IOllamaApiClient GetOllamaClient()
+        private static IOllamaApiClient GetOllamaClient(SettingsDto settings)
         {
-            string baseAddress = "http://localhost:11434/api";
-            var httpClient = new HttpClient(new HttpLoggingHandler()) { BaseAddress = new Uri(baseAddress), Timeout = TimeSpan.FromMinutes(40) };
+            var httpClient = new HttpClient(new HttpLoggingHandler()) { BaseAddress = new Uri(settings.OllamaUrl), Timeout = TimeSpan.FromSeconds(settings.OllamaTimeout) };
             var client = RestService.For<IOllamaApiClient>(httpClient);
 
             return client;
@@ -45,7 +44,7 @@ namespace OllamaClient.OllamaUtils
         /// <param name="model"></param>
         /// <param name="prompt"></param>
         /// <returns></returns>
-        internal static async Task<BaseResultDto> SendPromptAsync(string model, string prompt, string[]? images)
+        internal static async Task<BaseResultDto> SendPromptAsync(SettingsDto settings, string model, string prompt, string[]? images)
         {
             if (string.IsNullOrEmpty(model))
                 return new BaseResultDto(false, "Не выбрана модель. Запрос не будет отправлен.");
@@ -55,8 +54,8 @@ namespace OllamaClient.OllamaUtils
 
             try
             {
-                IOllamaApiClient client = GetOllamaClient();
-                var result = await client.GenerateAsync(new PromptDto(model, prompt, false, images, "json", new OptionsDto { Temperature = 0.0}));
+                IOllamaApiClient client = GetOllamaClient(settings);
+                var result = await client.GenerateAsync(new PromptDto(model, prompt, false, images, "json", new OptionsDto { Temperature = settings.Temperature}));
                 return new BaseResultDto(true, FormatJson(result));
             }
             catch (Exception ex)

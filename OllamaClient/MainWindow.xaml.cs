@@ -5,6 +5,7 @@ using OllamaClient.OllamaUtils;
 using System.IO;
 using System.Reflection;
 using System.Windows;
+using System.Xaml;
 
 namespace OllamaClient
 {
@@ -13,6 +14,8 @@ namespace OllamaClient
     /// </summary>
     public partial class MainWindow : Window
     {
+        internal SettingsDto _settings;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -27,35 +30,55 @@ namespace OllamaClient
         private async void Button_Send_Click(object sender, RoutedEventArgs e)
         {
             var model = cbOllamaModels.Text;
+            (DateTime requestTime, BaseResultDto rs) result = (default, null!);
+            var fileName = tbFileName.Text.Trim();
 
-            var fileResult = FileUtils.GetFileContentBase64(tbFileName.Text.Trim());
-            var requestTime = DateTime.UtcNow;
-            SetStatusBar("Отправляем запрос", requestTime, null);
-            BaseResultDto result = null!;
-            if (fileResult.Item1)
-                result = await OllamaApiClient.SendPromptAsync(cbOllamaModels.Text, OllamaRequest.Text, new string[] { fileResult.Item2 });
-            else
-                result = await OllamaApiClient.SendPromptAsync(cbOllamaModels.Text, OllamaRequest.Text, null);
-
-            if (!result.IsValid)
-                MessageBox.Show($"Модель: {model}{Environment.NewLine}Ошибка:{result.Result}", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+            if (fileName != string.Empty)
+            {
+                var fileResult = FileUtils.GetFileContentBase64(fileName);
+                if (fileResult.Item1.CheckResult && fileResult.Item2 != null)
+                {
+                    result = await SendMessageToOllamaAsync(result.rs, fileResult.Item2);
+                }
+                else
+                    MessageBox.Show($"{fileResult.Item1.CheckMessage}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
             else
             {
-                this.OllamaResponseFull.Text = result.Result;
-                if (result.Result is not null)
+                result = await SendMessageToOllamaAsync(result.rs, null);
+            }
+           
+            
+            if (!result.rs.IsValid)
+                MessageBox.Show($"Модель: {model}{Environment.NewLine}Ошибка:{result.rs.Result}", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+            else
+            {
+                this.tbOllamaResponseFull.Text = result.rs.Result;
+                if (result.rs.Result is not null)
                 {
-                    var resultDto = JsonConvert.DeserializeObject<ResultDto>(result.Result);
-                    this.OllamaResponsePayload.Text = string.IsNullOrEmpty(resultDto?.Response) ? resultDto?.Thinking : resultDto.Response;
+                    var resultDto = JsonConvert.DeserializeObject<ResultDto>(result.rs.Result);
+                    this.tbOllamaResponsePayload.Text = string.IsNullOrEmpty(resultDto?.Response) ? resultDto?.Thinking : resultDto.Response;
                 }
                 var responseTime = DateTime.UtcNow;
-                SetStatusBar("Получен ответ", requestTime, responseTime);
+                SetStatusBar("Получен ответ", result.requestTime, responseTime);
 
-                this.OllamaResponsePayload.Text += Environment.NewLine;
-                this.OllamaResponsePayload.Text += Environment.NewLine;
-                this.OllamaResponsePayload.Text += Environment.NewLine;
+                this.tbOllamaResponsePayload.Text += Environment.NewLine;
+                this.tbOllamaResponsePayload.Text += Environment.NewLine;
+                this.tbOllamaResponsePayload.Text += Environment.NewLine;
 
-                this.OllamaResponsePayload.Text += $"Длительность: {(responseTime - requestTime).ToString()}";
+                this.tbOllamaResponsePayload.Text += $"Длительность: {(responseTime - result.requestTime).ToString()}";
             }
+        }
+
+        private async Task<(DateTime, BaseResultDto)> SendMessageToOllamaAsync(BaseResultDto result, string? fileBase64)
+        {
+            var requestTime = DateTime.UtcNow;
+            SetStatusBar("Отправляем запрос", requestTime, null);
+            if (!string.IsNullOrEmpty(fileBase64))
+                result = await OllamaApiClient.SendPromptAsync(_settings, cbOllamaModels.Text, tbOllamaRequest.Text, new string[] { fileBase64 });
+            else
+                result = await OllamaApiClient.SendPromptAsync(_settings, cbOllamaModels.Text, tbOllamaRequest.Text, null);
+            return (requestTime, result);
         }
 
         private void SetStatusBar(string stText, DateTime requestTime, DateTime? responseTime)
@@ -68,14 +91,15 @@ namespace OllamaClient
 
         private void Button_Clear_Click(object sender, RoutedEventArgs e)
         {
-            MessageBoxResult result = MessageBox.Show("Очистить поля?", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            MessageBoxResult result = MessageBox.Show("Очистить поля?", "Подтверждение", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
             if (result == MessageBoxResult.Yes)
             {
-                this.OllamaRequest.Text = string.Empty;
-                this.OllamaResponseFull.Text = string.Empty;
+                this.tbOllamaRequest.Text = string.Empty;
+                this.tbOllamaResponseFull.Text = string.Empty;
                 //this.cbOllamaModels.Items.Clear();
-                this.OllamaResponsePayload.Text = string.Empty;
+                this.tbOllamaResponsePayload.Text = string.Empty;
+                this.tbFileName.Clear();
             }
         }
 
@@ -83,8 +107,8 @@ namespace OllamaClient
         {
             var requestTime = DateTime.UtcNow;
             SetStatusBar("Запрос на получение списка моделей отправлен", requestTime, null);
-            var modelsJson = await OllamaApiClient.GetLocalModelsListAsync();
-            OllamaResponseFull.Text = modelsJson;
+            var modelsJson = await OllamaApiClient.GetLocalModelsListAsync(_settings);
+            tbOllamaResponseFull.Text = modelsJson;
             LoadModels(modelsJson);
             SetStatusBar("Список моделей получен", requestTime, DateTime.UtcNow);
         }
@@ -129,6 +153,41 @@ namespace OllamaClient
                 string filename = dlg.FileName;
                 tbFileName.Text = filename;
             }
+        }
+
+        private void Button_Settings_Click(object sender, RoutedEventArgs e)
+        {
+            var settingsWindow = new SettingsWindow(_settings);
+            settingsWindow.Owner = this;
+            settingsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            bool? result = settingsWindow.ShowDialog();
+
+            if (result == true)
+            {
+                _settings = settingsWindow.GetSettings();
+            }
+        }
+
+        private void Window_Initialized(object sender, EventArgs e)
+        {
+            var fileInfo = FileUtils.ReadSettings();
+            if (!fileInfo.Item1.CheckResult || fileInfo.Item2 == null)
+            {
+                MessageBox.Show($"{fileInfo.Item1.CheckMessage}", "Внимание!", MessageBoxButton.OK, MessageBoxImage.Information);
+                _settings = new SettingsDto();
+            }
+            else
+            {
+                _settings = fileInfo.Item2;
+                ApplySettings();
+            }
+        }
+
+        private void ApplySettings()
+        {
+            tbOllamaRequest.Text = _settings.DefaultPrompt;
+            cbOllamaModels.Items.Add(_settings.DefaultModel);
+            cbOllamaModels.SelectedIndex = 0;
         }
     }
 }
