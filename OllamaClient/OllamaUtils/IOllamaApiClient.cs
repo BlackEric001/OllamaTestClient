@@ -12,6 +12,13 @@ namespace OllamaClient.OllamaUtils
     interface IOllamaApiClient
     {
         /// <summary>
+        /// http://localhost:11434/api/version
+        /// </summary>
+        /// <returns></returns>
+        [Get("/version")]
+        Task<string> GetVersionAsync();
+
+        /// <summary>
         /// http://localhost:11434/api/tags
         /// </summary>
         /// <returns></returns>

@@ -8,19 +8,46 @@ namespace OllamaClient.OllamaUtils
 {
     /// <summary>
     /// https://github.com/ollama/ollama/blob/main/docs/api.md
+    /// https://docs.ollama.com/api/introduction
     /// </summary>
     static class OllamaApiClient
     {
         /// <summary>
+        /// http://localhost:11434/api/version
+        /// </summary>
+        /// <returns></returns>
+        internal static async Task<(bool, string)> GetVersionAsync(SettingsDto settings)
+        {
+            try
+            {
+                IOllamaApiClient client = GetOllamaClient(settings);
+                var result = await client.GetVersionAsync();
+
+                return (true, FormatJson(result));
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+        }
+
+        /// <summary>
         /// http://localhost:11434/api/tags
         /// </summary>
         /// <returns></returns>
-        internal static async Task<string> GetLocalModelsListAsync(SettingsDto settings)
+        internal static async Task<(bool, string)> GetLocalModelsListAsync(SettingsDto settings)
         {
-            IOllamaApiClient client = GetOllamaClient(settings);
-            var result = await client.GetLocalModelsAsync();
+            try
+            {
+                IOllamaApiClient client = GetOllamaClient(settings);
+                var result = await client.GetLocalModelsAsync();
 
-            return FormatJson(result);
+                return (true, FormatJson(result));
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
         }
 
         private static IOllamaApiClient GetOllamaClient(SettingsDto settings)

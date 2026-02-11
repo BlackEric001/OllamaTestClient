@@ -50,7 +50,7 @@ namespace OllamaClient
            
             
             if (!result.rs.IsValid)
-                MessageBox.Show($"Модель: {model}{Environment.NewLine}Ошибка:{result.rs.Result}", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                tbOllamaResponseFull.Text = $"Модель: {model}{Environment.NewLine}Ошибка:{Environment.NewLine}{result.rs.Result}";
             else
             {
                 this.tbOllamaResponseFull.Text = result.rs.Result;
@@ -107,10 +107,33 @@ namespace OllamaClient
         {
             var requestTime = DateTime.UtcNow;
             SetStatusBar("Запрос на получение списка моделей отправлен", requestTime, null);
-            var modelsJson = await OllamaApiClient.GetLocalModelsListAsync(_settings);
+            (bool result, string modelsJson) = await OllamaApiClient.GetLocalModelsListAsync(_settings);
+            if (result)
+            {
+                LoadModels(modelsJson);
+                SetStatusBar("Список моделей получен", requestTime, DateTime.UtcNow);
+            }
+            else
+            {
+                SetStatusBar("Ошибка получения списка моделей", requestTime, DateTime.UtcNow);
+            }
             tbOllamaResponseFull.Text = modelsJson;
-            LoadModels(modelsJson);
-            SetStatusBar("Список моделей получен", requestTime, DateTime.UtcNow);
+        }
+
+        private async void Button_GetVersion_Click(object sender, RoutedEventArgs e)
+        {
+            var requestTime = DateTime.UtcNow;
+            SetStatusBar("Запрос на получение версии ollama отправлен", requestTime, null);
+            (bool result, string versionJson) = await OllamaApiClient.GetVersionAsync(_settings);
+            if (result)
+            {
+                SetStatusBar("Версия получена", requestTime, DateTime.UtcNow);
+            }
+            else
+            {
+                SetStatusBar("Ошибка получения версии", requestTime, DateTime.UtcNow);
+            }
+            tbOllamaResponseFull.Text = versionJson;
         }
 
         private void LoadModels(string modelsJson)

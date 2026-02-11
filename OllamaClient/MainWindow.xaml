@@ -63,6 +63,7 @@
             <Button Grid.Row="5" Content="Загрузить список моделей" HorizontalAlignment="Left" VerticalAlignment="Center" Click="Button_List_Click" Grid.Column="1"/>
             <Button Grid.Row="5" Content="Отправить запрос" HorizontalAlignment="Center" VerticalAlignment="Center" Click="Button_Send_Click" Grid.Column="1"/>
             <Button Grid.Row="5" Content="Очистить" HorizontalAlignment="Right" VerticalAlignment="Center" Click="Button_Clear_Click" Grid.Column="1"/>
+            <Button Grid.Row="5" Content="Версия" HorizontalAlignment="Right" VerticalAlignment="Center" Click="Button_GetVersion_Click" Grid.Column="2"/>
         </Grid>
     </DockPanel>
 </Window>    
